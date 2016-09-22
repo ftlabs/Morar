@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-const dotenv = require('dotenv');
+const dotenv = require('dotenv').config();
 const app = require('../app');
 const debug = require('debug')('Morar:server');
 const http = require('http');
