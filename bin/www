@@ -5,8 +5,8 @@
  */
 
 const dotenv = require('dotenv').config();
-const app = require('../app');
 const debug = require('debug')('Morar:server');
+const app = require('../app');
 const http = require('http');
 
 /**

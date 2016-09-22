@@ -1,3 +1,4 @@
+const debug = require('debug')('Morar:routes:retrieve');
 const express = require('express');
 const router = express.Router();
 
