@@ -18,23 +18,23 @@ app.use('/retrieve', require('./routes/retrieve'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  const err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+	const err = new Error('Not Found');
+	err.status = 404;
+	next(err);
 });
 
 // error handlers
 
 if (process.env.ENVIRONMENT === 'DEVELOPMENT') {
-  app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.json(err);
-  });
+	app.use(function(err, req, res, next) {
+		res.status(err.status || 500);
+		res.json(err);
+	});
 }
 
 app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  res.send(err.message);
+	res.status(err.status || 500);
+	res.send(err.message);
 });
 
 module.exports = app;
