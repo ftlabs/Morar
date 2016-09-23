@@ -42,35 +42,41 @@ function storeObjectInDatabase(req, res){
 
 	} else {
 
-		const writeOperations = [];
+		let storageOperation = undefined
 
-		writeOperations.push(database.write(entry, process.env.AWS_DATA_TABLE_NAME));
+		if(requestFile !== undefined){
 
-		debug(storage);
-
-		if(requestBody !== undefined && requestFile === undefined){
-			debug('Request has content in the body. Writing to S3');
-			writeOperations.push(storage.write(requestBody, entry.uuid));
-		} else if(requestFile !== undefined){
-			debug('Request has a file. Writing to S3');
-			const uploadFileReadableStream = fs.createReadStream(requestFile.path, {
+			const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
 				flags: 'r',
 				encoding: null,
 				fd: null,
 				mode: 0o666,
 				autoClose: true
 			});
-			writeOperations.push(storage.write(uploadFileReadableStream, entry.uuid));
+
+			storageOperation = storage.write(uploadedFileReadableStream, entry.uuid)
+
+		} else if (requestBody !== undefined){
+			debug(requestBody);
+			storageOperation = storage.write(requestBody, entry.uuid);
+		} else {
+			storageOperation = Promise.resolve(null);
 		}
 
-		Promise.all(writeOperations)
+		storageOperation
 			.then(function(){
-				res.send("OK");
+				debug("Writing entry to database");
+				return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
+			})
+			.then(function(result){
+				debug(result);
+				res.send({
+					status : "ok",
+					id : entry.uuid
+				});
 			})
 			.catch(err => {
 				debug(err);
-				res.status(500);
-				res.end();
 			})
 		;
 

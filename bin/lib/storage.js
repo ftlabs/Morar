@@ -14,7 +14,7 @@ function putItemIntoStorage(item, key){
 			if(err){
 				reject(err);
 			} else {
-				resolve();
+				resolve(item);
 			}
 		});
 
