@@ -1,5 +1,6 @@
 const debug = require('debug')('Morar:routes:store');
 
+const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 const uuid = require('uuid').v4;
@@ -43,13 +44,28 @@ function storeObjectInDatabase(req, res){
 
 		const writeOperations = [];
 
-		const dbOperation = database.write(entry, process.env.AWS_DATA_TABLE_NAME);
+		writeOperations.push(database.write(entry, process.env.AWS_DATA_TABLE_NAME));
 
-		writeOperations.push(dbOperation);
+		debug(storage);
+
+		if(requestBody !== undefined && requestFile === undefined){
+			debug('Request has content in the body. Writing to S3');
+			writeOperations.push(storage.write(requestBody, entry.uuid));
+		} else if(requestFile !== undefined){
+			debug('Request has a file. Writing to S3');
+			const uploadFileReadableStream = fs.createReadStream(requestFile.path, {
+				flags: 'r',
+				encoding: null,
+				fd: null,
+				mode: 0o666,
+				autoClose: true
+			});
+			writeOperations.push(storage.write(uploadFileReadableStream, entry.uuid));
+		}
 
 		Promise.all(writeOperations)
 			.then(function(){
-				res.send("OK");		
+				res.send("OK");
 			})
 			.catch(err => {
 				debug(err);
@@ -57,7 +73,6 @@ function storeObjectInDatabase(req, res){
 				res.end();
 			})
 		;
-
 
 	}
 
