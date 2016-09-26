@@ -19,7 +19,8 @@ function storeObjectInDatabase(req, res){
 	const requestFile = req.file;
 
 	const token = requestQueryParams.token;
-
+	delete requestQueryParams.token;
+	
 	if(token === undefined){
 		res.status(422);
 		res.send(`An access token needs to be passed as a query parameter with the key 'token'`);
@@ -61,7 +62,7 @@ function storeObjectInDatabase(req, res){
 					let storageOperation = undefined
 
 					if(requestFile !== undefined){
-
+						debug("There is a file to save");
 						const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
 							flags: 'r',
 							encoding: null,
@@ -70,10 +71,10 @@ function storeObjectInDatabase(req, res){
 							autoClose: true
 						});
 
-						storageOperation = storage.write(uploadedFileReadableStream, entry.uuid)
+						storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
 
 					} else if (requestBody !== undefined){
-						debug(requestBody);
+						debug("There is a request body to save", requestBody);
 						storageOperation = storage.write(requestBody, entry.uuid);
 					} else {
 						storageOperation = Promise.resolve(null);
