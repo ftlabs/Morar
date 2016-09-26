@@ -8,24 +8,25 @@ function writeToDatabase(item, table){
 	return new Promise( (resolve, reject) => {
 
 		if(table === undefined || table === null){
-			reject("'table' argument is undefined or null");
-			return;
+			reject(`'table' argument is ${table}`);
+		} else {
+			
+			Dynamo.put({
+				TableName : table,
+				Item : item
+			}, (err, result) => {
+
+				if(err){
+					reject(err);
+				} else {				
+					resolve(result);
+				}
+
+			});
+
 		}
 
-		Dynamo.put({
-			TableName : table,
-			Item : item
-		}, (err, result) => {
-
-			if(err){
-				reject(err);
-			} else {				
-				resolve(result);
-			}
-
-		});
-
-	})
+	});
 
 }
 
@@ -34,7 +35,7 @@ function readFromDatabase(item, table){
 	return new Promise( (resolve, reject) => {
 
 		if(table === undefined || table === null){
-			reject("'table' argument is undefined or null");
+			reject(`'table' argument is ${table}`);
 		} else {
 
 			Dynamo.get({
@@ -55,7 +56,7 @@ function readFromDatabase(item, table){
 
 }
 
-function scanDatabase(table, filter){
+function scanDatabase(filter, table){
 
 	filter = filter || {};
 
@@ -84,8 +85,15 @@ function scanDatabase(table, filter){
 
 }
 
+function updateItemInDatabase(item, updateExpression, expressionValues, table){
+
+
+
+}
+
 module.exports = {
 	write : writeToDatabase,
 	read : readFromDatabase,
-	scan : scanDatabase
+	scan : scanDatabase,
+	update : updateItemInDatabase
 };
