@@ -15,7 +15,7 @@ function checkKeyIsValid(token){
 
 			const response = {};
 
-			if(result.item === undefined){
+			if(result.Item === undefined){
 				response.isValid = false;				
 			} else {
 
