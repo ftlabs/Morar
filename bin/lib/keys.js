@@ -4,18 +4,30 @@ const debug = require('debug')('Morar:bin:lib:keys');
 const uuid = require('uuid').v4;
 const database = require('./database');
 
-function checkKeyIsValid(key){
+function checkKeyIsValid(token){
 
-	return database.read(key, process.env.AWS_KEYS_TABLE)
+	return database.read({
+		token
+	}, process.env.AWS_KEYS_TABLE)
 		.then(function(result){
 
-			const response = {};
-			const item = result.Item;
+			debug(result);
 
-			if(item.token !== undefined && item.disabled === false){
-				response.isValid = true;
+			const response = {};
+
+			if(result.item === undefined){
+				response.isValid = false;				
 			} else {
-				response.isValid = false;
+
+				const item = result.Item;
+
+				if(item.token !== undefined && item.disabled === false){
+					response.isValid = true;
+					response.info = item;
+				} else {
+					response.isValid = false;
+				}
+
 			}
 
 			return response;
@@ -77,7 +89,7 @@ function createKey(userDetails){
 
 }
 
-function disableAlreadyCreatedKey(){
+function disableAlreadyCreatedKey(key){
 
 	return new Promise( (resolve, reject) => {
 
