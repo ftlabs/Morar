@@ -5,8 +5,16 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const express_enforces_ssl = require('express-enforces-ssl');
+const helmet = require('helmet');
 
 const app = express();
+
+if(process.env.NODE_ENV === "production"){
+	app.use(helmet());
+	app.enable('trust proxy');
+	app.use(express_enforces_ssl());
+}
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -18,6 +26,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+app.use('/', require('./routes'));
 app.use('/store', require('./routes/store'));
 app.use('/retrieve', require('./routes/retrieve'));
 app.use('/token', require('./routes/token.js'));
