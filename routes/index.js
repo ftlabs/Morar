@@ -3,7 +3,9 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', function(req, res, next) {
-	res.send("OK");
+	res.render('home', {
+		serviceName : "Morar"
+	})
 });
 
 module.exports = router;
