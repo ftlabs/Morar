@@ -4,17 +4,18 @@ const router = express.Router();
 const authS3O = require('s3o-middleware');
 const keys = require('../bin/lib/keys');
 
+const serviceName = process.env.SERVICE_NAME || "Morar";
+
 router.use(authS3O);
 
-router.get('/', function(req, res) {
-	// res.send("OK");
+router.get('/generate', function(req, res) {
 
 	keys.create({ owner : req.cookies.s3o_username })
 		.then(token => {
 			debug(token);
 
 			res.render('generate-token', {
-				serviceName : process.env.SERVICE_NAME || "Morar",
+				serviceName,
 				token
 			});
 
@@ -22,9 +23,52 @@ router.get('/', function(req, res) {
 	;
 });
 
-router.post('/create', function(req, res){
+router.get('/revoke', function(req, res){
 
-	res.send("OK");
+	res.render('revoke-token', {
+		serviceName
+	});
+
+});
+
+router.post('/revoke', function(req, res){
+	debug(req.body);
+
+	const tokenToRevoke = req.body.token;
+
+	if(tokenToRevoke === undefined){
+		res.status(500);
+		res.send("You did not pass a token to be revoked");
+	} 
+
+	keys.check(tokenToRevoke)
+		.then(checkedToken => {
+			
+			if(checkedToken.isValid){
+
+				keys.disable(tokenToRevoke)
+					.then(function(){
+						
+						res.render('message', {
+							messageTitle: "Token revocation",
+							messageContent : `The token ${tokenToRevoke} has been successfully revoked`
+						});
+
+					})
+					.catch(err => {
+						debug(err);
+						res.status(500);
+						res.send("An error occurred when we tried to revoke this key");
+					});
+				;
+
+			} else {
+				res.status(500);
+				res.send("The token passed for revocation is not valid");
+			}
+
+		})
+	;
 
 });
 

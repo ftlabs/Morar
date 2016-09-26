@@ -87,6 +87,23 @@ function scanDatabase(filter, table){
 
 function updateItemInDatabase(item, updateExpression, expressionValues, table){
 
+	return new Promise( (resolve, reject) => {
+
+			Dynamo.update({
+				TableName : table,
+				Key : item,
+				UpdateExpression : updateExpression,
+				ExpressionAttributeValues : expressionValues
+			}, function(err, data){
+
+				if(err){
+					reject(err);
+				} else {
+					resolve(data);
+				}
+
+			});
+	});
 
 
 }

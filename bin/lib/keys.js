@@ -89,11 +89,23 @@ function createKey(userDetails){
 
 }
 
-function disableAlreadyCreatedKey(key){
+function disableAlreadyCreatedKey(token){
 
-	return new Promise( (resolve, reject) => {
-
-	});
+	if(token === undefined){
+		return Promise.reject(`A token to revoke was not passed`);
+	} else {
+		return database.update(
+				{ token },
+				"set disabled = :r",
+				{ ":r" : true },
+				process.env.AWS_KEYS_TABLE
+			)
+			.then(result => {
+				debug(result);
+				return true;
+			})
+		;
+	}
 
 }
 
