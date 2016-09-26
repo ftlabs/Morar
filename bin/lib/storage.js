@@ -26,7 +26,30 @@ function getItemFromStorage(name){
 	return false;
 }
 
+function checkIfItemExistsInStorage(itemUUID){
+
+	return new Promise(function(resolve, reject){
+
+		S3.headObject({
+			Bucket : process.env.AWS_DATA_BUCKET,
+			Key : `${itemUUID}`
+		}, function (err, metadata) { 
+
+			if (err && err.code === 'NotFound') {
+				resolve(false);
+			} else if(err){
+				reject(err);
+			} else {
+				resolve(true);
+			}
+		});
+
+	});
+
+}
+
 module.exports = {
 	write : putItemIntoStorage,
-	read : getItemFromStorage
+	read : getItemFromStorage,
+	check : checkIfItemExistsInStorage
 };
