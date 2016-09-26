@@ -38,7 +38,7 @@ function storeObjectInDatabase(req, res){
 
 				const entry = {
 					uuid : uuid(),
-					dateCreated : new Date() * 1,
+					dateCreated : new Date() / 1000 | 0,
 					createdBy : checkedToken.info.owner
 				};
 
