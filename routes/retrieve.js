@@ -16,7 +16,7 @@ router.get('/:itemUUID', function(req, res) {
 	debug(req.params.itemUUID);
 
 	const itemUUID = req.params.itemUUID;
-
+	
 	database.read({ uuid : itemUUID }, process.env.AWS_DATA_TABLE_NAME)
 		.then(data => {
 			debug(data);
@@ -40,7 +40,7 @@ router.get('/:itemUUID', function(req, res) {
 					.then(itemExists => {
 
 						if(itemExists){
-							response.objectURL = `/object/${itemUUID}`;
+							response.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
 						}
 
 						res.json(response);
@@ -67,7 +67,20 @@ router.get('/:itemUUID', function(req, res) {
 
 router.get('/object/:itemUUID', function(req, res){
 
-	res.send("OK");
+	const itemUUID = req.params.itemUUID;
+
+	storage.read(itemUUID)
+		.then(data => {
+			debug(data);
+			res.setHeader('Content-Type', 'application/octet-stream');
+			res.end(data.Body, 'binary');
+		})
+		.catch(err => {
+			debug(err);
+			res.status(500);
+			res.send("An error occurred whilst retrieving that item");
+		})
+	;
 
 });
 
