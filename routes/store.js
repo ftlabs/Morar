@@ -40,61 +40,73 @@ function storeObjectInDatabase(req, res){
 	
 	if( Object.keys(requestQueryParams).length === 0 && requestBody === undefined && requestFile === undefined){
 
-		res.status(500);
+		res.status(422);
 		res.json({
 			message : "You did not pass anything to be stored"
 		});
 
-	} else if( (requestQueryParams.name === undefined || requestQueryParams.name === "") && requestBody === undefined && requestFile !== undefined){
+		return
+	} 
+	
+	if( (requestQueryParams.name === undefined || requestQueryParams.name === "") && requestBody !== undefined ){
+
+		res.status(422);
+		res.json({
+			message : "You must pass a query parameter with the key 'name' to store this object"
+		});
+		return;
+
+	}
+
+	if( (requestQueryParams.name === undefined || requestQueryParams.name === "") && requestBody === undefined && requestFile !== undefined){
 		
-		res.status(500);
+		res.status(422);
 		res.json({
 			message : "You must pass a query parameter with the key 'name' to upload a file"
 		});
+		return;
+	
+	}
 
+	let storageOperation = undefined
+
+	if(requestFile !== undefined){
+		debug("There is a file to save");
+		const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
+			flags: 'r',
+			encoding: null,
+			fd: null,
+			mode: 0o666,
+			autoClose: true
+		});
+
+		storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
+
+	} else if (requestBody !== undefined){
+		debug("There is a request body to save", requestBody);
+		storageOperation = storage.write(requestBody, entry.uuid);
 	} else {
+		storageOperation = Promise.resolve(null);
+	}
 
-		let storageOperation = undefined
-
-		if(requestFile !== undefined){
-			debug("There is a file to save");
-			const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
-				flags: 'r',
-				encoding: null,
-				fd: null,
-				mode: 0o666,
-				autoClose: true
+	storageOperation
+		.then(function(){
+			debug("Writing entry to database");
+			return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
+		})
+		.then(function(result){
+			debug(result);
+			res.send({
+				status : "ok",
+				id : entry.uuid
 			});
-
-			storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
-
-		} else if (requestBody !== undefined){
-			debug("There is a request body to save", requestBody);
-			storageOperation = storage.write(requestBody, entry.uuid);
-		} else {
-			storageOperation = Promise.resolve(null);
-		}
-
-		storageOperation
-			.then(function(){
-				debug("Writing entry to database");
-				return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
-			})
-			.then(function(result){
-				debug(result);
-				res.send({
-					status : "ok",
-					id : entry.uuid
-				});
-			})
-			.catch(err => {
-				debug(err);
-				res.status(500);
-				res.send("An error occurred when saving your entity");
-			})
-		;
-
-	};
+		})
+		.catch(err => {
+			debug(err);
+			res.status(500);
+			res.send("An error occurred when saving your entity");
+		})
+	;
 
 }
 
