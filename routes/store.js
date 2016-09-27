@@ -89,6 +89,8 @@ function storeObjectInDatabase(req, res){
 			})
 			.catch(err => {
 				debug(err);
+				res.status(500);
+				res.send("An error occurred when saving your entity");
 			})
 		;
 

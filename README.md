@@ -1,4 +1,4 @@
-# Morår
+# Morar
 A home for all currently discarded FT metadata
 
 ## Acquiring an access token
