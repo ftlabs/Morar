@@ -38,11 +38,18 @@ function storeObjectInDatabase(req, res){
 
 	});
 	
-	if( Object.keys(requestQueryParams).length === 0 && requestBody === undefined){
+	if( Object.keys(requestQueryParams).length === 0 && requestBody === undefined && requestFile === undefined){
 
 		res.status(500);
 		res.json({
-			message : "You did not pass any metadata to be stored"
+			message : "You did not pass anything to be stored"
+		});
+
+	} else if( (requestQueryParams.name === undefined || requestQueryParams.name === "") && requestBody === undefined && requestFile !== undefined){
+		
+		res.status(500);
+		res.json({
+			message : "You must pass a query parameter with the key 'name' to upload a file"
 		});
 
 	} else {
