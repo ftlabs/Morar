@@ -4,6 +4,7 @@ const router = express.Router();
 
 const database = require('../bin/lib/database');
 const storage = require('../bin/lib/storage');
+const requireToken = require('../bin/lib/require-token');
 
 router.get('/', function(req, res){
 
@@ -11,12 +12,14 @@ router.get('/', function(req, res){
 
 });
 
+router.use(requireToken);
+
 router.get('/:itemUUID', function(req, res) {
 
 	debug(req.params.itemUUID);
-
-	const itemUUID = req.params.itemUUID;
 	
+	const itemUUID = req.params.itemUUID;
+
 	database.read({ uuid : itemUUID }, process.env.AWS_DATA_TABLE_NAME)
 		.then(data => {
 			debug(data);
