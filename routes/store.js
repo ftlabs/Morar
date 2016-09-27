@@ -7,10 +7,12 @@ const uuid = require('uuid').v4;
 
 const database = require('../bin/lib/database');
 const storage = require('../bin/lib/storage');
-const keys = require('../bin/lib/keys');
+const requireToken = require('../bin/lib/require-token');
 
 const router = express.Router();
 const m = multer({ dest: process.env.TMP_FOLDER || '/tmp' })
+
+router.use(requireToken);
 
 function storeObjectInDatabase(req, res){
 
@@ -18,101 +20,72 @@ function storeObjectInDatabase(req, res){
 	const requestBody = req.body.data;
 	const requestFile = req.file;
 
-	const token = requestQueryParams.token;
 	delete requestQueryParams.token;
-	
-	if(token === undefined){
-		res.status(422);
-		res.send(`An access token needs to be passed as a query parameter with the key 'token'`);
-		return;
-	}
 	
 	debug(requestQueryParams, requestBody, requestFile);
 
-	keys.check(token)
-		.then(checkedToken => {
+	const entry = {
+		uuid : uuid(),
+		dateCreated : new Date() / 1000 | 0,
+		createdBy : req.checkedToken.info.owner
+	};
 
-			debug(checkedToken);
+	Object.keys(requestQueryParams).forEach(key => {
 
-			if(checkedToken.isValid){
+		if(entry[key] === undefined){
+			entry[key] = requestQueryParams[key];
+		}
 
-				const entry = {
-					uuid : uuid(),
-					dateCreated : new Date() / 1000 | 0,
-					createdBy : checkedToken.info.owner
-				};
+	});
+	
+	if( Object.keys(requestQueryParams).length === 0 && requestBody === undefined){
 
-				Object.keys(requestQueryParams).forEach(key => {
+		res.status(500);
+		res.json({
+			message : "You did not pass any metadata to be stored"
+		});
 
-					if(entry[key] === undefined){
-						entry[key] = requestQueryParams[key];
-					}
+	} else {
 
+		let storageOperation = undefined
+
+		if(requestFile !== undefined){
+			debug("There is a file to save");
+			const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
+				flags: 'r',
+				encoding: null,
+				fd: null,
+				mode: 0o666,
+				autoClose: true
+			});
+
+			storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
+
+		} else if (requestBody !== undefined){
+			debug("There is a request body to save", requestBody);
+			storageOperation = storage.write(requestBody, entry.uuid);
+		} else {
+			storageOperation = Promise.resolve(null);
+		}
+
+		storageOperation
+			.then(function(){
+				debug("Writing entry to database");
+				return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
+			})
+			.then(function(result){
+				debug(result);
+				res.send({
+					status : "ok",
+					id : entry.uuid
 				});
-				
-				if( Object.keys(requestQueryParams).length === 0 ){
+			})
+			.catch(err => {
+				debug(err);
+			})
+		;
 
-					res.status(500);
-					res.json({
-						message : "You did not pass any metadata to be stored"
-					});
-
-				} else {
-
-					let storageOperation = undefined
-
-					if(requestFile !== undefined){
-						debug("There is a file to save");
-						const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
-							flags: 'r',
-							encoding: null,
-							fd: null,
-							mode: 0o666,
-							autoClose: true
-						});
-
-						storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
-
-					} else if (requestBody !== undefined){
-						debug("There is a request body to save", requestBody);
-						storageOperation = storage.write(requestBody, entry.uuid);
-					} else {
-						storageOperation = Promise.resolve(null);
-					}
-
-					storageOperation
-						.then(function(){
-							debug("Writing entry to database");
-							return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
-						})
-						.then(function(result){
-							debug(result);
-							res.send({
-								status : "ok",
-								id : entry.uuid
-							});
-						})
-						.catch(err => {
-							debug(err);
-						})
-					;
-
-				}
-
-			} else {
-				res.status(401);
-				res.send("The token passed is not valid");
-			}
-
-		})
-		.catch(err => {
-			debug(err);
-			res.status(500);
-			res.send(`An error occurred whilst storing your metadata`);
-		})
-	;
-
-
+	};
 
 }
 

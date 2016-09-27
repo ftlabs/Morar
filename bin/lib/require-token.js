@@ -13,8 +13,8 @@ module.exports = function(req, res, next){
 
 		keys.check(token)
 			.then(checkedToken => {
-
 				if(checkedToken.isValid){
+					req.checkedToken = checkedToken;
 					next();
 				} else {
 					res.status(403);
