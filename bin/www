@@ -6,6 +6,12 @@
 
 const dotenv = require('dotenv').config();
 const debug = require('debug')('Morar:server');
+
+if(process.env.SERVICE_URL === undefined){
+	debug(`SERVICE_URL is not defined in system environment. It is: ${process.env.SERVICE_URL}`);
+	process.exit(1);
+}
+
 const app = require('../app');
 const http = require('http');
 
