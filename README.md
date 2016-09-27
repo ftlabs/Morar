@@ -3,7 +3,7 @@ A home for all currently discarded FT metadata
 
 ## Acquiring an access token
 
-To store and retrieve data with Morar, you must first request an access token. You can do this by heading to the `/token/generate`. This path is behind S3O. Once authenticated, a token will be generated and displayed. This token must be included as a query paramater on all `/store` and `retrieve` endpoints.
+To store and retrieve data with Morar, you must first request an access token. You can do this by heading to the `/token/generate`. This path is behind S3O. Once authenticated, a token will be generated and displayed. This token must be included as a query paramater on all `/store` and `/retrieve` endpoints.
 
 ## Storing data in Morar
 
