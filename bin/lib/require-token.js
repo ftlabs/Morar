@@ -13,6 +13,7 @@ module.exports = function(req, res, next){
 
 		keys.check(token)
 			.then(checkedToken => {
+				debug(checkedToken);
 				if(checkedToken.isValid){
 					req.checkedToken = checkedToken;
 					next();
