@@ -105,7 +105,6 @@ function updateItemInDatabase(item, updateExpression, expressionValues, table){
 			});
 	});
 
-
 }
 
 module.exports = {
