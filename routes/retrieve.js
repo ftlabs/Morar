@@ -5,6 +5,7 @@ const router = express.Router();
 const database = require('../bin/lib/database');
 const storage = require('../bin/lib/storage');
 const requireToken = require('../bin/lib/require-token');
+const scrub = require('../bin/lib/clean-results');
 
 router.get('/', function(req, res){
 
@@ -30,10 +31,7 @@ router.get('/:itemUUID', function(req, res) {
 
 			} else {
 				
-				const item = data.Item;
-				delete item.createdBy;
-				delete item.dateCreated;
-				delete item.uuid;
+				const item = scrub(data.Item);
 
 				const response = {
 					data : item

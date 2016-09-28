@@ -2,7 +2,6 @@ const debug = require('debug')('Morar:bin:lib:require-token');
 const keys = require('./keys');
 
 module.exports = function(req, res, next){
-
 	const token = req.query.token;
 
 	if(token === undefined || token === ""){
