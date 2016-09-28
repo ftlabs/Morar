@@ -27,7 +27,8 @@ function storeObjectInDatabase(req, res){
 	const entry = {
 		uuid : uuid(),
 		dateCreated : new Date() / 1000 | 0,
-		createdBy : req.checkedToken.info.owner
+		createdBy : req.checkedToken.info.owner,
+		hasFile : false
 	};
 
 	Object.keys(requestQueryParams).forEach(key => {
@@ -80,10 +81,13 @@ function storeObjectInDatabase(req, res){
 			autoClose: true
 		});
 
+		entry.hasFile = true;
+
 		storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
 
 	} else if (requestBody !== undefined){
 		debug("There is a request body to save", requestBody);
+		entry.hasFile = true;
 		storageOperation = storage.write(requestBody, entry.uuid);
 	} else {
 		storageOperation = Promise.resolve(null);
