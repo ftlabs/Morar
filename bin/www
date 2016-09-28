@@ -12,6 +12,10 @@ if(process.env.SERVICE_URL === undefined){
 	process.exit(1);
 }
 
+if(process.env.ALLOWED_USERS === undefined){
+	process.env.ALLOWED_USERS = [];
+}
+
 const app = require('../app');
 const http = require('http');
 

@@ -10,7 +10,7 @@ router.use(authS3O);
 
 router.get('/generate', function(req, res) {
 
-	keys.create({ owner : req.cookies.s3o_username })
+	keys.create({ owner : res.locals.s3o_username })
 		.then(token => {
 			debug(token);
 
