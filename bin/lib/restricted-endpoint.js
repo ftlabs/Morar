@@ -1,6 +1,6 @@
 const debug = require('debug')('Morar:bin:lib:restricted-endpoint');
 
-const allowedUsers = process.env.ALLOWED_USERS.split(',') || [];
+const allowedUsers = process.env.ALLOWED_USERS.split(',');
 
 function reject(res){
 	res.status(403);
@@ -9,21 +9,28 @@ function reject(res){
 
 module.exports = function(req, res, next){
 
+	debug(`CheckedToken:`, req.checkedToken);
 
-	const thisUser = req.cookies.s3o_username;
-	debug(`${thisUser} tried to access a restricted endpoint`);
-
-	if(thisUser === undefined){
+	if(req.checkedToken === undefined){
 		reject(res);
 	} else {
+		
+		const thisUser = req.checkedToken.info.owner;
+		debug(`${thisUser} tried to access a restricted endpoint`);
 
-		// Javascript Doorman
-		const theUserIsOnTheList = allowedUsers.indexOf(thisUser) > -1;
-
-		if(theUserIsOnTheList){
-			next();
-		} else {
+		if(thisUser === undefined){
 			reject(res);
+		} else {
+
+			// Javascript Doorman
+			const theUserIsOnTheList = allowedUsers.indexOf(thisUser) > -1;
+
+			if(theUserIsOnTheList){
+				next();
+			} else {
+				reject(res);
+			}
+
 		}
 
 	}
