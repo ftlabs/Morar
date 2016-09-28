@@ -29,7 +29,8 @@ app.use(cookieParser());
 app.use('/', require('./routes'));
 app.use('/store', require('./routes/store'));
 app.use('/retrieve', require('./routes/retrieve'));
-app.use('/token', require('./routes/token.js'));
+app.use('/token', require('./routes/token'));
+app.use('/query', require('./routes/query'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
