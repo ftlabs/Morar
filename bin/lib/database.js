@@ -56,20 +56,15 @@ function readFromDatabase(item, table){
 
 }
 
-function scanDatabase(filter, table){
-
-	filter = filter || {};
+function scanDatabase(query){
 
 	return new Promise( (resolve, reject) => {
 
-		if(table === undefined || table === null){
-			reject("'table' argument is undefined or null");
+		if(query.TableName === undefined || query.TableName === null){
+			reject(`'TableName' argument is ${query.TableName}`);
 		} else {
 			
-			Dynamo.scan({
-				TableName : table,
-				ScanFilter : filter
-			}, function(err, data){
+			Dynamo.scan(query, function(err, data){
 
 				if(err){
 					reject(err);
