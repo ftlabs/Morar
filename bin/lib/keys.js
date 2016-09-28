@@ -6,6 +6,10 @@ const database = require('./database');
 
 function checkKeyIsValid(token){
 
+	if(token === undefined || token === ""){
+		return Promise.reject("A valid token was not passed");
+	}
+
 	return database.read({
 		token
 	}, process.env.AWS_KEYS_TABLE)
