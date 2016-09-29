@@ -71,7 +71,8 @@ curl 'https://morar.ft.com/retrieve/[OBJECT_UUID]?token=[YOUR_ACCESS_TOKEN]'
 
 Which will return a JSON object with the following structure:
 
-```{
+```
+{
 	data : {
 		name : 'Demo Object',
 		glass : 'onion',
