@@ -33,25 +33,18 @@ router.get('/:itemUUID', function(req, res) {
 				
 				const item = scrub(data.Item);
 
+				debug(data.Item, data.Item.hasFile);
+
+				if(data.Item.hasFile){
+					debug("Object has a file");
+					item.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
+				}
+
 				const response = {
 					data : item
 				};
 
-				storage.check(itemUUID)
-					.then(itemExists => {
-
-						if(itemExists){
-							response.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
-						}
-
-						res.json(response);
-
-					})
-					.catch(err => {
-						res.status(500);
-						res.send(`An error occurred whilst checking our database`);
-					})
-				;
+				res.json(response);
 
 			}
 
