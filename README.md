@@ -45,6 +45,60 @@ You can also store binary files for later retrieval. When storing a file, you _m
 
 `curl -X POST -F "f=@./photo.jpeg" 'https://morar.ft.com/store/?name=The%20Team&token=[YOUR_ACCESS_TOKEN]'`
 
+**Reserved Keys**
+
+The following strings cannot be used as query values in a storage request to Morar. Any request containing the following keys as query paramaters will be rejected:
+
+* uuid
+* dateCreated
+* createdBy
+* hasFile
+
+This only applies to query paramaters for the `/store` endpoint, these keys can still be used in a request body.
+
 ## Retrieving data in Morar
 
-Currently, Morar is not searchable, but individual items are retrievable using the UUID that is returned when each object is stored.
+Using the `/retrieve` endpoint, single objects can be retrieved using the UUID that was returned when that piece of data was stored.
+
+A valid token is required to retrieve a piece of information, but does not have to be the same token that was used to create it.
+
+### Retreiving data by UUID
+
+```
+// GET request
+curl 'https://morar.ft.com/retrieve/[OBJECT_UUID]?token=[YOUR_ACCESS_TOKEN]'
+```
+
+Which will return a JSON object with the following structure:
+
+```{
+	data : {
+		name : 'Demo Object',
+		glass : 'onion',
+		yellow : 'submarine',
+		hey : 'bulldog'
+	},
+	objectURL : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
+}
+```
+
+The data in the returned object will contain the key-value pairs that you passed as query parameters when you first created the object. 
+
+The `objectURL` value will only be present in the response if you also passed data as a binary file or as part of the request body. To access this data, you can follow the URL download the file. 
+
+### Retreiving file object associated with meta data
+
+If a piece of data stored in Morar also has a file associated with it, it can be retrieved with the `/retrieve/object/` endpoint:
+
+```
+// GET request
+curl 'https://morar.ft.com/retrieve/object/[OBJECT_UUID]?token=[YOUR_ACCESS_TOKEN]'
+```
+
+As with the `retrieve` endpoint, a valid token is required in order to access the object.
+
+_Please note:_ all data passed to Morar as a binary file or request body is treated equally, we're not concerned with the types of the files that are being passed to the service. As such, when the object is retrieved from storage, we return an octet-stream. You may need to add a file extension to the file name for your system to recognise the file as a certain type.
+
+## Querying data in Morar
+
+It is possible to query and filter all of the data stored in Morar, but this functionality is limited to a select few. If you wish to use the following endpoints, please contact FT Labs for a chat about your needs/hopes/dreams.
