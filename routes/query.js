@@ -8,7 +8,7 @@ const restrictEndpoint = require('../bin/lib/restricted-endpoint');
 const database = require('../bin/lib/database');
 const scrub = require('../bin/lib/clean-results');
 
-router.get('/json', [requireToken, restrictEndpoint], function(req, res, next) {
+router.get('/', [requireToken, restrictEndpoint], function(req, res, next) {
 
 	const queryParams = req.query;
 	delete queryParams.token;
@@ -56,18 +56,6 @@ router.get('/json', [requireToken, restrictEndpoint], function(req, res, next) {
 	;
 
 	debug(queryParams);
-
-});
-
-router.use('/', authS3O);
-router.get('/', function(req, res, next) {
-
-	const queryParams = req.query;
-	res.render('message', {
-		serviceName : "Morar",
-		messageTitle : "Declaration of intent for endpoint",
-		messageContent : "This endpoint will return items from our database"
-	});
 
 });
 
