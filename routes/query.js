@@ -35,17 +35,24 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res, next) {
 		.then(data => {
 
 			debug(data);
-			data.Items.forEach(i => {
 
+			const responseItems = data.Items.map(i => {
+				
+				const o = {};
+				
 				if(i.hasFile){
-					i.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${i.uuid}`;
+					o.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${i.uuid}`;
 				}
+
+				o.data = scrub(i);
+
+				return o;
 
 			});
 
-			const results = scrub(data.Items);
+			// const results = scrub(data.Items);
 
-			res.json(results);
+			res.json(responseItems);
 
 		})
 		.catch(err => {

@@ -30,14 +30,16 @@ router.get('/:itemUUID', function(req, res) {
 				res.send("No item with that UUID exists in our database");
 
 			} else {
+
+				const response = {};
 				
 				if(data.Item.hasFile){
-					data.Item.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
+					response.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
 				}
 
-				const item = scrub(data.Item);
+				response.data = scrub(data.Item);
 
-				res.json(item);
+				res.json(response);
 
 			}
 
