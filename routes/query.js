@@ -34,6 +34,7 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res, next) {
 		})
 		.then(data => {
 
+			debug(data);
 			data.Items.forEach(i => {
 
 				if(i.hasFile){
@@ -42,10 +43,7 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res, next) {
 
 			});
 
-			debug(data.Items);
-
 			const results = scrub(data.Items);
-
 
 			res.json(results);
 

@@ -8,6 +8,7 @@ const uuid = require('uuid').v4;
 const database = require('../bin/lib/database');
 const storage = require('../bin/lib/storage');
 const requireToken = require('../bin/lib/require-token');
+const validKeys = require('../bin/lib/valid-keys');
 
 const router = express.Router();
 const m = multer({ dest: process.env.TMP_FOLDER || '/tmp' })
@@ -114,6 +115,7 @@ function storeObjectInDatabase(req, res){
 
 }
 
+router.use(validKeys);
 router.post('/', m.single('f'), storeObjectInDatabase);
 router.put('/', m.single('f'), storeObjectInDatabase);
 
