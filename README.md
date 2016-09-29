@@ -102,3 +102,60 @@ _Please note:_ all data passed to Morar as a binary file or request body is trea
 ## Querying data in Morar
 
 It is possible to query and filter all of the data stored in Morar, but this functionality is limited to a select few. If you wish to use the following endpoints, please contact FT Labs for a chat about your needs/hopes/dreams.
+
+### Querying stored information
+
+The database of information stored in Morar can be accessed through the `/query` endpoint.
+
+The following request will return every item stored in Morar that has been put there by john.doe. 
+
+```
+// GET request
+curl 'https://morar.ft.com/query/?token=[YOUR_ACCESS_TOKEN]&createdBy=john.doe'
+```
+
+To further filter the results, extra query paramters can be added to the request, which will act like an AND operator, allowing you to narrow down your returned options.
+
+```
+// GET request
+curl 'https://morar.ft.com/query/?token=[YOUR_ACCESS_TOKEN]&createdBy=john.doe&dataType=JSON'
+```
+
+For a successful query, a JSON object with the following structure will be returned:
+
+```
+{
+	items : [
+		{
+			data : {
+				name : 'Demo Object',
+				glass : 'onion',
+				yellow : 'submarine',
+				hey : 'bulldog'
+			},
+			objectURL : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
+		},
+		{
+			data : {
+				john : 'Lennon',
+				paul : 'McCartney',
+				george : 'Harrison',
+				ringo : 'Starr'
+			},
+			objectURL : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
+		}
+
+	]
+
+}
+```
+
+Note that the objects in the items array have the same structure as the items that are returned for individual items.
+
+If there are no results for the query, the items array will be empty.
+
+```
+	{
+		items : []
+	}
+```
