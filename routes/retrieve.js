@@ -48,7 +48,6 @@ router.get('/:itemUUID', function(req, res) {
 
 					})
 					.catch(err => {
-						debug(err);
 						res.status(500);
 						res.send(`An error occurred whilst checking our database`);
 					})
