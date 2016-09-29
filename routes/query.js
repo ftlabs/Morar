@@ -50,9 +50,9 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res, next) {
 
 			});
 
-			// const results = scrub(data.Items);
-
-			res.json(responseItems);
+			res.json({
+				items : responseItems
+			});
 
 		})
 		.catch(err => {
