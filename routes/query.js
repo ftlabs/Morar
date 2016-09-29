@@ -34,9 +34,21 @@ router.get('/json', [requireToken, restrictEndpoint], function(req, res, next) {
 		})
 		.then(data => {
 
+			data.Items.forEach(i => {
+
+				if(i.hasFile){
+					i.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${i.uuid}`;
+				}
+
+			});
+
+			debug(data.Items);
+
 			const results = scrub(data.Items);
+
+
 			res.json(results);
-			
+
 		})
 		.catch(err => {
 			debug("Err\n", err);

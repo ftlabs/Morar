@@ -31,27 +31,13 @@ router.get('/:itemUUID', function(req, res) {
 
 			} else {
 				
+				if(data.Item.hasFile){
+					data.Item.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
+				}
+
 				const item = scrub(data.Item);
 
-				const response = {
-					data : item
-				};
-
-				storage.check(itemUUID)
-					.then(itemExists => {
-
-						if(itemExists){
-							response.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
-						}
-
-						res.json(response);
-
-					})
-					.catch(err => {
-						res.status(500);
-						res.send(`An error occurred whilst checking our database`);
-					})
-				;
+				res.json(item);
 
 			}
 

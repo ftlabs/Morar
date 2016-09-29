@@ -6,17 +6,17 @@ const thingsToRemove = [
 ];
 
 module.exports = function(items){
-
+	
 	if(Array.isArray(items)){
 
 		const cleanedItems = items.map(i => {
+			const editedClone = Object.assign({}, i);
 
 			thingsToRemove.forEach(t => {
-
-				delete i[t];
+				delete editedClone[t];
 			});
 
-			return i;
+			return editedClone;
 
 		});
 
@@ -24,7 +24,7 @@ module.exports = function(items){
 
 	} else {
 
-		const cleanedItem = items;
+		const cleanedItem = Object.assign({}, items);
 
 		thingsToRemove.forEach(t => {
 			delete cleanedItem[t];
