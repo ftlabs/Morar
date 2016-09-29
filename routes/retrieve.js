@@ -31,20 +31,13 @@ router.get('/:itemUUID', function(req, res) {
 
 			} else {
 				
-				const item = scrub(data.Item);
-
-				debug(data.Item, data.Item.hasFile);
-
 				if(data.Item.hasFile){
-					debug("Object has a file");
-					item.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
+					data.Item.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${itemUUID}`;
 				}
 
-				const response = {
-					data : item
-				};
+				const item = scrub(data.Item);
 
-				res.json(response);
+				res.json(item);
 
 			}
 
