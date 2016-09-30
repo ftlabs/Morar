@@ -8,4 +8,10 @@ router.get('/', function(req, res, next) {
 	})
 });
 
+router.get('/__gtg', function(req, res){
+
+	res.end();
+
+});
+
 module.exports = router;
