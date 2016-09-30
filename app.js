@@ -10,6 +10,10 @@ const helmet = require('helmet');
 
 const app = express();
 
+app.get('/__gtg', allow301, function(req, res){
+	res.end();
+});
+
 if(process.env.NODE_ENV === "production"){
 	app.use(helmet());
 	app.enable('trust proxy');
