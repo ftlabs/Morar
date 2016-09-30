@@ -14,12 +14,6 @@ app.get('/__gtg', function(req, res){
 	res.end();
 });
 
-if(process.env.NODE_ENV === "production"){
-	app.enable('trust proxy');
-	app.use(express_enforces_ssl());
-	app.use(helmet());
-}
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 app.use(express.static(path.join(__dirname, 'public')));
