@@ -10,7 +10,7 @@ const helmet = require('helmet');
 
 const app = express();
 
-app.get('/__gtg', allow301, function(req, res){
+app.get('/__gtg', function(req, res){
 	res.end();
 });
 
