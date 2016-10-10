@@ -7,7 +7,10 @@ module.exports = function(req, res, next){
 	if(token === undefined || token === ""){
 		debug(req.query);
 		res.status(422);
-		res.send(`An access token needs to be passed as a query parameter with the key 'token'`);
+		res.json({
+			status : 'error',
+			reason : `An access token needs to be passed as a query parameter with the key 'token'`
+		});
 	} else {
 
 		keys.check(token)
@@ -18,13 +21,20 @@ module.exports = function(req, res, next){
 					next();
 				} else {
 					res.status(403);
-					res.send("The token passed was not valid");
+					res.json({
+						status : 'error',
+						reason : 'The token passed was not valid'
+					})
 				}
 
 			})
 			.catch(err => {
 				debug(err);
-				res.send("An error occurred as we checked your token");
+				res.status(500);
+				res.json({
+					status : 'error',
+					reason : 'An error occurred as we checked your token'
+				});
 			})
 		;
 
