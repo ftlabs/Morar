@@ -21,7 +21,6 @@
     "morgan": "~1.7.0",
     "multer": "^1.2.0",
     "s3o-middleware": "^1.7.0",
-    "serve-favicon": "~2.3.0",
     "uuid": "^2.0.3"
   }
 }
