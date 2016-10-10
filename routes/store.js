@@ -90,7 +90,7 @@ function storeObjectInDatabase(req, res){
 		storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
 
 	} else if (requestBody !== undefined){
-		debug('There is a request body to save', requestBody);
+		debug('There is a request body to save');
 		entry.hasFile = true;
 		storageOperation = storage.write(requestBody, entry.uuid);
 	} else {
