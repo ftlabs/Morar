@@ -23,7 +23,7 @@ function storeObjectInDatabase(req, res){
 
 	delete requestQueryParams.token;
 	
-	debug(requestQueryParams, requestBody, requestFile);
+	debug(requestQueryParams);
 
 	const entry = {
 		uuid : uuid(),
