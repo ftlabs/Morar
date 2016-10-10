@@ -9,7 +9,11 @@ const scrub = require('../bin/lib/clean-results');
 
 router.get('/', function(req, res){
 
-	res.send("You have not specified an item UUID for retrieval");
+	res.status(422);
+	res.json({
+		status : 'error',
+		reason : 'You have not specified an item UUID for retrieval'
+	});
 
 });
 
@@ -27,7 +31,10 @@ router.get('/:itemUUID', function(req, res) {
 			if(data.Item === undefined){
 
 				res.status(404);
-				res.send("No item with that UUID exists in our database");
+				res.json({
+					status : 'error',
+					reason : 'No item with that UUID exists in our database'
+				});
 
 			} else {
 
@@ -48,6 +55,10 @@ router.get('/:itemUUID', function(req, res) {
 			debug(err);
 			res.status(500);
 			res.send(`An error occurred whilst checking our database`);
+			res.json({
+				status : 'error',
+				reason : `An error occurred whilst checking our database`
+			});
 		})
 	;
 
@@ -66,7 +77,10 @@ router.get('/object/:itemUUID', function(req, res){
 		.catch(err => {
 			debug(err);
 			res.status(500);
-			res.send("An error occurred whilst retrieving that item");
+			res.status({
+				status : 'error',
+				reason : 'An error occurred whilst retrieving that item'
+			});
 		})
 	;
 

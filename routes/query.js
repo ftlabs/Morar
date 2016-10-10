@@ -8,7 +8,7 @@ const restrictEndpoint = require('../bin/lib/restricted-endpoint');
 const database = require('../bin/lib/database');
 const scrub = require('../bin/lib/clean-results');
 
-router.get('/', [requireToken, restrictEndpoint], function(req, res, next) {
+router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 
 	const queryParams = req.query;
 	delete queryParams.token;
@@ -57,6 +57,11 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res, next) {
 		})
 		.catch(err => {
 			debug("Err\n", err);
+			res.status(500);
+			res.json({
+				status : 'error',
+				reason : 'An error occurred whilst querying the database'
+			});
 		})
 	;
 
