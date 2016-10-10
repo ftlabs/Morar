@@ -20,6 +20,14 @@ router.get('/generate', function(req, res) {
 			});
 
 		})
+		.catch(err => {
+			debug(err);
+			res.status(500);
+			res.json({
+				status : 'error',
+				reason : err
+			});
+		})
 	;
 });
 
@@ -38,7 +46,11 @@ router.post('/revoke', function(req, res){
 
 	if(tokenToRevoke === undefined){
 		res.status(500);
-		res.send("You did not pass a token to be revoked");
+		res.json({
+			status : 'error',
+			reason : 'You did not pass a token to be revoked'
+		});
+		return;
 	} 
 
 	keys.check(tokenToRevoke)
@@ -58,13 +70,19 @@ router.post('/revoke', function(req, res){
 					.catch(err => {
 						debug(err);
 						res.status(500);
-						res.send("An error occurred when we tried to revoke this key");
+						res.json({
+							status : 'error',
+							reason : err
+						});
 					});
 				;
 
 			} else {
 				res.status(500);
-				res.send("The token passed for revocation is not valid");
+				res.json({
+					status : 'error',
+					reason : 'The token passed for revocation is not valid'
+				});
 			}
 
 		})
