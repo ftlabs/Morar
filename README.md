@@ -11,7 +11,7 @@ _These examples are using cURL_
 
 _The `/store` endpoints will work with both **POST** and **PUT** HTTP verbs_
 
-_Don't to construct your own requests? There's a [Node.js](https://github.com/ftlabs/morar-client) client for that_
+_Don't to construct your own requests? There's a [Node.js client](https://github.com/ftlabs/morar-client) for that_
 
 ### Storing some simple metadata
 Here, each query parameter (with the exception of 'token') will be stored as a key-value pair, and will be returned as a JSON object when accessed through the `/retrieve` endpoints.
