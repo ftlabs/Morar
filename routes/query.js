@@ -12,61 +12,80 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 
 	const queryParams = req.query;
 	delete queryParams.token;
+	debug('queryParams without token =' + queryParams);
 
-	const d = {};
-	const e = {};
-	const f = Object.keys(queryParams).map( (p, idx) => {
-		d[`#${idx}`] = p;
-		e[`:${idx}`] = queryParams[p];
-		return `contains(#${idx}, :${idx})`;
-	}).join(' AND ');
+	// handle empty query by displaying (~6hrs old) table size
+	if (Object.keys(queryParams).length == 0 ) {
+		database.describe(process.env.AWS_DATA_TABLE_NAME)
+			.then(data => {
+				debug('describe: data=' + data);
+				res.json({
+					description : data
+				});
+			})
+			.catch(err => {
+				debug("Err\n", err);
+				res.status(500);
+				res.json({
+					status : 'error',
+					reason : 'An error occurred whilst describing the table'
+				});
+			})
+		;
+	} else {
 
-	debug(d);
-	debug(e);
-	debug(f);
+		const d = {};
+		const e = {};
+		const f = Object.keys(queryParams).map( (p, idx) => {
+			d[`#${idx}`] = p;
+			e[`:${idx}`] = queryParams[p];
+			return `contains(#${idx}, :${idx})`;
+		}).join(' AND ');
 
-	database.scan({
-			TableName : process.env.AWS_DATA_TABLE_NAME,
-			Limit : 50,
-			ExpressionAttributeNames: d,
-			ExpressionAttributeValues: e,
-			FilterExpression : f,
-		})
-		.then(data => {
+		debug('d=' + d);
+		debug('e=' + e);
+		debug('f=' + f);
 
-			debug(data);
+		database.scan({
+				TableName : process.env.AWS_DATA_TABLE_NAME,
+				Limit : 50,
+				ExpressionAttributeNames: d,
+				ExpressionAttributeValues: e,
+				FilterExpression : f,
+			})
+			.then(data => {
 
-			const responseItems = data.Items.map(i => {
-				
-				const o = {};
-				
-				if(i.hasFile){
-					o.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${i.uuid}`;
-				}
+				debug(data);
 
-				o.data = scrub(i);
+				const responseItems = data.Items.map(i => {
+					
+					const o = {};
+					
+					if(i.hasFile){
+						o.objectURL = `${process.env.SERVICE_URL}/retrieve/object/${i.uuid}`;
+					}
 
-				return o;
+					o.data = scrub(i);
 
-			});
+					return o;
 
-			res.json({
-				items : responseItems
-			});
+				});
 
-		})
-		.catch(err => {
-			debug("Err\n", err);
-			res.status(500);
-			res.json({
-				status : 'error',
-				reason : 'An error occurred whilst querying the database'
-			});
-		})
-	;
+				res.json({
+					items : responseItems
+				});
 
-	debug(queryParams);
-
+			})
+			.catch(err => {
+				debug("Err\n", err);
+				res.status(500);
+				res.json({
+					status : 'error',
+					reason : 'An error occurred whilst querying the database'
+				});
+			})
+		;
+	};
 });
 
 module.exports = router;

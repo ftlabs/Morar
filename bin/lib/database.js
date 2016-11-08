@@ -3,6 +3,28 @@ AWS.config.update({region: process.env.AWS_REGION || 'us-west-2'});
 
 const Dynamo = new AWS.DynamoDB.DocumentClient();
 
+function describeTable(table){
+
+	return new Promise( (resolve, reject) => {
+
+		if(table === undefined || table === null){
+			reject(`'table' argument is ${table}`);
+		} else {
+			
+			Dynamo.describeTable({
+				TableName : table
+			}, (err, result) => {
+
+				if(err){
+					reject(err);
+				} else {				
+					resolve(result);
+				}
+			});
+		}
+	});
+}
+
 function writeToDatabase(item, table){
 
 	return new Promise( (resolve, reject) => {
@@ -103,8 +125,9 @@ function updateItemInDatabase(item, updateExpression, expressionValues, table){
 }
 
 module.exports = {
-	write : writeToDatabase,
-	read : readFromDatabase,
-	scan : scanDatabase,
-	update : updateItemInDatabase
+	write    : writeToDatabase,
+	read     : readFromDatabase,
+	scan     : scanDatabase,
+	update   : updateItemInDatabase,
+	describe : describeTable
 };
