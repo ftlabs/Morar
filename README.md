@@ -162,3 +162,27 @@ If there are no results for the query, the items array will be empty.
 		items : []
 	}
 ```
+
+## Building Morar
+
+### in dev
+
+```
+$ git clone git@github.com:ftlabs/Morar.git
+$ cd Morar
+$ npm i
+$ # populate the .env file with ENV params
+$ echo "
+DEBUG=Morar:*
+NODE_ENV=development
+AWS_ACCESS_KEY_ID=YOUR_KEY_SEE_LASTPASS
+AWS_SECRET_ACCESS_KEY=YOUR_KEY_SEE_LASTPASS
+AWS_DATA_TABLE_NAME=YOUR_TABLE_NAME_SEE_LASTPASS
+AWS_DATA_BUCKET=YOUR_BUCKET_NAME_SEE_LASTPASS
+AWS_KEYS_TABLE=YOUR_TABLE_NAME_SEE_LASTPASS
+REQUIRED_KEY_CREATION_FIELDS=owner
+SERVICE_URL=http://localhost:3000
+ALLOWED_USERS=YOUR_AD_USERNAMES_CSV
+" > .env
+$ npm run start
+

@@ -1,7 +1,27 @@
-const AWS = require('aws-sdk');
+const debug = require('debug')('Morar:database');
+const AWS   = require('aws-sdk');
 AWS.config.update({region: process.env.AWS_REGION || 'us-west-2'});
 
-const Dynamo = new AWS.DynamoDB.DocumentClient();
+const Dynamo       = new AWS.DynamoDB();                // for basic table accesses
+const DynamoClient = new AWS.DynamoDB.DocumentClient(); // for metadata about a table
+
+function describeTable(table){
+	return new Promise( (resolve, reject) => {
+		if(table === undefined || table === null){
+			reject(`'table' argument is ${table}`);
+		} else {
+			Dynamo.describeTable({
+				TableName : table
+			}, (err, result) => {
+				if(err){
+					reject(err);
+				} else {				
+					resolve(result);
+				}
+			});
+		}
+	});
+}
 
 function writeToDatabase(item, table){
 
@@ -11,7 +31,7 @@ function writeToDatabase(item, table){
 			reject(`'table' argument is ${table}`);
 		} else {
 			
-			Dynamo.put({
+			DynamoClient.put({
 				TableName : table,
 				Item : item
 			}, (err, result) => {
@@ -38,7 +58,7 @@ function readFromDatabase(item, table){
 			reject(`'table' argument is ${table}`);
 		} else {
 
-			Dynamo.get({
+			DynamoClient.get({
 				TableName : table,
 				Key : item
 			}, function(err, data) {
@@ -64,7 +84,7 @@ function scanDatabase(query){
 			reject(`'TableName' argument is ${query.TableName}`);
 		} else {
 			
-			Dynamo.scan(query, function(err, data){
+			DynamoClient.scan(query, function(err, data){
 
 				if(err){
 					reject(err);
@@ -84,7 +104,7 @@ function updateItemInDatabase(item, updateExpression, expressionValues, table){
 
 	return new Promise( (resolve, reject) => {
 
-			Dynamo.update({
+			DynamoClient.update({
 				TableName : table,
 				Key : item,
 				UpdateExpression : updateExpression,
@@ -103,8 +123,9 @@ function updateItemInDatabase(item, updateExpression, expressionValues, table){
 }
 
 module.exports = {
-	write : writeToDatabase,
-	read : readFromDatabase,
-	scan : scanDatabase,
-	update : updateItemInDatabase
+	write    : writeToDatabase,
+	read     : readFromDatabase,
+	scan     : scanDatabase,
+	update   : updateItemInDatabase,
+	describe : describeTable
 };
