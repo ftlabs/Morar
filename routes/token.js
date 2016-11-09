@@ -6,15 +6,6 @@ const keys = require('../bin/lib/keys');
 
 const serviceName = process.env.SERVICE_NAME || "Morar";
 
-router.use(function(req, res, next){
-
-	debug('================ COOKIES ================');
-	debug(req.cookies);
-	debug(`================ +++++++ ================`);
-	next();
-
-});
-
 router.use(authS3O);
 
 router.get('/generate', function(req, res) {
