@@ -10,21 +10,30 @@ const scrub = require('../bin/lib/clean-results');
 
 router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 
-	const queryParams = req.query;
+	let queryParams = req.query;
 	delete queryParams.token;
-	debug('queryParams without token =' + queryParams);
+	// debug('queryParams without token =', queryParams);
 
 	// handle empty query by displaying (~6hrs old) table size
 	if (Object.keys(queryParams).length == 0 ) {
 		database.describe(process.env.AWS_DATA_TABLE_NAME)
 			.then(data => {
-				debug('describe: data=' + data);
 				res.json({
-					description : data
+					description : {
+						TableSizeBytes : data['Table']['TableSizeBytes'],
+						ItemCount      : data['Table']['ItemCount'],
+						caveats        : [
+						'using the describeTable method, we have info on the table size that is possibly up to 6hrs old'
+						]
+					},
+					instructions : [
+					'If you want to list some actual items, you need to filter by specifying some key/value pairs in the url, such as &createdBy=john.doe .',
+					'You can use any of the keys you specified when uploading the data into the store.'
+					]
 				});
 			})
 			.catch(err => {
-				debug("Err\n", err);
+				debug("get: empty query: Err\n", err);
 				res.status(500);
 				res.json({
 					status : 'error',
@@ -32,7 +41,7 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 				});
 			})
 		;
-	} else {
+	} else { // some query params were specified
 
 		const d = {};
 		const e = {};
@@ -42,16 +51,16 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 			return `contains(#${idx}, :${idx})`;
 		}).join(' AND ');
 
-		debug('d=' + d);
-		debug('e=' + e);
-		debug('f=' + f);
+		// debug('d=' + d);
+		// debug('e=' + e);
+		// debug('f=' + f);
 
 		database.scan({
 				TableName : process.env.AWS_DATA_TABLE_NAME,
 				Limit : 50,
-				ExpressionAttributeNames: d,
-				ExpressionAttributeValues: e,
-				FilterExpression : f,
+				ExpressionAttributeNames  : d,
+				ExpressionAttributeValues : e,
+				FilterExpression          : f,
 			})
 			.then(data => {
 
@@ -77,7 +86,7 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 
 			})
 			.catch(err => {
-				debug("Err\n", err);
+				debug("get: non-empty query: Err\n", err);
 				res.status(500);
 				res.json({
 					status : 'error',
