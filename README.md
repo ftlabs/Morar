@@ -3,7 +3,7 @@ So, what is Morar?
 
 Morar is 
 
-- (the deepest freshwater body in the British Isles)[https://en.wikipedia.org/wiki/Loch_Morar], 
+- [the deepest freshwater body in the British Isles](https://en.wikipedia.org/wiki/Loch_Morar), 
 - a reaction to the realisation that we are letting some data disappear after it is used 'in the moment', but before it is properly recorded for posterity and subsequent re-use. 
 
 With this service, we have the following goals:
