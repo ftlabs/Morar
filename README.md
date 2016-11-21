@@ -1,5 +1,21 @@
 # Morar
-A home for all currently discarded FT metadata
+So, what is Morar?
+
+Morar is 
+
+a) (the deepest freshwater body in the British Isles)[https://en.wikipedia.org/wiki/Loch_Morar], 
+b) a reaction to the realisation that we are letting some data disappear after it is used 'in the moment', but before it is properly recorded for posterity and subsequent re-use. 
+
+With this service, we have the following goals:
+
+1) highlight that this data loss is real
+2) highlight that this data has real value+potential, if only it was captured
+3) get the data leaks plugged and dealt with at source
+4) ensure we capture the data in the meanwhile for when (3) comes to pass so we can retrospectively flesh out the 'dealt with' solution with as much legacy data as possible
+
+Morar is all about (1)+(2)+(4) in order to cause (3).
+
+Morar provides a simple, lightweight means for capturing snapshots of the data that would otherwise be lost. The data can be retrieved in batch, with a bit of effort and being polite to Labs team, for that glorious moment when (3) comes to pass and the leak is being 'dealt with'. Morar is not a service to be used as a back-end data store for live projects.
 
 ## Acquiring an access token
 
