@@ -77,24 +77,82 @@ function readFromDatabase(item, table){
 }
 
 function scanDatabase(query){
+	
+	debug('Scanning database', query);
+
+	const results = [];
+
+	function scan(query){
+
+		return new Promise( (resolve, reject) => {
+
+			if(query.TableName === undefined || query.TableName === null){
+				reject(`'TableName' argument is ${query.TableName}`);
+			} else {
+
+				DynamoClient.scan(query, function(err, data){
+
+					if(err){
+						reject(err);
+					} else {
+						debug(data.Items.length);
+						if(data.LastEvaluatedKey !== undefined){
+							results.push(data);
+							query.ExclusiveStartKey = data.LastEvaluatedKey;
+							return scan(query)
+								.then(function(){
+									resolve();
+								})
+							;
+						} else {
+							resolve();
+						}
+
+					}
+
+				})
+
+			}
+
+		});
+
+	}
+
+	return scan(query)
+		.then(function(){
+
+			const totalItems = [];
+
+			results.forEach(result => {
+				result.Items.forEach(Item => {
+					totalItems.push(Item);
+				})
+			});
+
+			debug('Total number of items:', totalItems.length);
+
+			return {
+				Items : totalItems
+			};
+
+		})
+	;
+
+}
+
+function queryItemsInDatabase(options){
 
 	return new Promise( (resolve, reject) => {
 
-		if(query.TableName === undefined || query.TableName === null){
-			reject(`'TableName' argument is ${query.TableName}`);
-		} else {
-			
-			DynamoClient.scan(query, function(err, data){
+		DynamoClient.query(options, (err, data) => {
 
-				if(err){
-					reject(err);
-				} else {
-					resolve(data);
-				}
+			if(err){
+				reject(err);
+			} else {
+				resolve(data);
+			}
 
-			})
-
-		}
+		});
 
 	});
 
@@ -126,6 +184,7 @@ module.exports = {
 	write    : writeToDatabase,
 	read     : readFromDatabase,
 	scan     : scanDatabase,
+	query    : queryItemsInDatabase,
 	update   : updateItemInDatabase,
 	describe : describeTable
 };
