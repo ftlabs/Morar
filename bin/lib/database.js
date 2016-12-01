@@ -96,8 +96,8 @@ function scanDatabase(query){
 						reject(err);
 					} else {
 						debug(data.Items.length);
+						results.push(data);
 						if(data.LastEvaluatedKey !== undefined){
-							results.push(data);
 							query.ExclusiveStartKey = data.LastEvaluatedKey;
 							return scan(query)
 								.then(function(){
