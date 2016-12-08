@@ -57,7 +57,6 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 
 		database.scan({
 				TableName : process.env.AWS_DATA_TABLE_NAME,
-				Limit : 50,
 				ExpressionAttributeNames  : d,
 				ExpressionAttributeValues : e,
 				FilterExpression          : f,
