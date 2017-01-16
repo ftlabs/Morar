@@ -2,24 +2,22 @@ const debug = require('debug')('Morar:routes:store');
 
 const fs = require('fs');
 const express = require('express');
-const multer = require('multer');
 const uuid = require('uuid').v4;
+const shortID = require('shortid').generate;
 
 const database = require('../bin/lib/database');
 const storage = require('../bin/lib/storage');
 const requireToken = require('../bin/lib/require-token');
 const validKeys = require('../bin/lib/valid-keys');
+const tmpPath = process.env.TMP_PATH || '/tmp';
+
+const MAX_UPLOAD_SIZE = Number(process.env.MAX_UPLOAD_SIZE) || 104857600;
 
 const router = express.Router();
-const m = multer({ dest: process.env.TMP_FOLDER || '/tmp' })
-
-router.use(requireToken);
 
 function storeObjectInDatabase(req, res){
 
 	const requestQueryParams = req.query;
-	const requestBody = req.body.data;
-	const requestFile = req.file;
 
 	delete requestQueryParams.token;
 	
@@ -40,89 +38,92 @@ function storeObjectInDatabase(req, res){
 
 	});
 	
-	if( Object.keys(requestQueryParams).length === 0 && requestBody === undefined && requestFile === undefined){
+	if( Object.keys(requestQueryParams).length === 0 || ( requestQueryParams.name === undefined || requestQueryParams.name === '' ) ){
 
 		res.status(422);
 		res.json({
 			status : 'error',
-			message : 'You did not pass anything to be stored'
+			message : `You must pass a query parameter with the key 'name' to store this data`
 		});
 
 		return
-	} 
-	
-	if( (requestQueryParams.name === undefined || requestQueryParams.name === '') && requestBody !== undefined ){
+	}
 
+	if( Number(req.headers['content-length']) > MAX_UPLOAD_SIZE ){
 		res.status(422);
 		res.json({
 			status : 'error',
-			message : `You must pass a query parameter with the key 'name' to store this object`
+			reason : `The file was too big for upload. The maximum allowed upload size is ${MAX_UPLOAD_SIZE} bytes.`
 		});
-		return;
-
+		return
 	}
 
-	if( (requestQueryParams.name === undefined || requestQueryParams.name === '') && requestBody === undefined && requestFile !== undefined){
+	let requestSize = 0;
+	let chunks = [];
+
+	req.on('data', data => {
 		
-		res.status(422);
-		res.json({
-			status : 'error',
-			message : `You must pass a query parameter with the key 'name' to upload a file`
-		});
-		return;
-	
-	}
+		debug(data);
 
-	let storageOperation = undefined
+		chunks.push(data);		
 
-	if(requestFile !== undefined){
-		debug('There is a file to save');
-		const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
-			flags: 'r',
-			encoding: null,
-			fd: null,
-			mode: 0o666,
-			autoClose: true
-		});
+		requestSize += data.length;
+		debug(`Got ${data.length} bytes. Total: ${requestSize}`);
 
-		entry.hasFile = true;
+	});
 
-		storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
+	req.on('end', function(){
 
-	} else if (requestBody !== undefined){
-		debug('There is a request body to save');
-		entry.hasFile = true;
-		storageOperation = storage.write(requestBody, entry.uuid);
-	} else {
-		storageOperation = Promise.resolve(null);
-	}
+		let storageOperation = undefined
 
-	storageOperation
-		.then(function(){
-			debug('Writing entry to database');
-			return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
-		})
-		.then(function(result){
-			debug(result);
-			res.send({
-				status : 'ok',
-				id : entry.uuid
-			});
-		})
-		.catch(err => {
-			debug(err);
-			res.status(500);
-			res.json({
-				status : 'error',
-				reason : 'An error occurred when saving your entity'
-			});
-		})
-	;
+		if(chunks.length > 0){
+
+			const file = Buffer.concat(chunks);
+
+			console.log(`Buffer is ${file.length} bytes.`);
+
+			entry.hasFile = true;
+
+			storageOperation = storage.write(file, entry.uuid);
+
+		} else {
+			storageOperation = Promise.resolve(null);
+		}
+
+		storageOperation
+			.then(function(){
+				debug(`Writing entry (${entry.uuid}) to database`);
+				return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
+			})
+			.then(function(result){
+				debug(result);
+				res.send({
+					status : 'ok',
+					id : entry.uuid
+				});
+			})
+			.catch(err => {
+
+				const errID = uuid();
+				debug(`ErrorID: ${errID}`);
+				debug(err);
+
+				res.status(500);
+				res.json({
+					status : 'error',
+					reason : 'An error occurred when saving your entity',
+					errorID : errID
+				});
+			})
+		;
+
+	});
 
 }
 
+router.use(requireToken);
 router.use(validKeys);
-router.post('/', m.single('f'), storeObjectInDatabase);
-router.put('/', m.single('f'), storeObjectInDatabase);
+router.post('/', storeObjectInDatabase);
+router.put('/', storeObjectInDatabase);
 
 module.exports = router;
