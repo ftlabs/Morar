@@ -4,7 +4,7 @@ const S3 = new AWS.S3();
 AWS.config.update({region: process.env.AWS_REGION || 'us-west-2'});
 
 function putItemIntoStorage(item, key){
-
+	debug(item);
 	return new Promise(function(resolve, reject){
 
 		S3.putObject({

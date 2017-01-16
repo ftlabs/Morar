@@ -2,24 +2,22 @@ const debug = require('debug')('Morar:routes:store');
 
 const fs = require('fs');
 const express = require('express');
-const multer = require('multer');
 const uuid = require('uuid').v4;
+const shortID = require('shortid').generate;
 
 const database = require('../bin/lib/database');
 const storage = require('../bin/lib/storage');
 const requireToken = require('../bin/lib/require-token');
 const validKeys = require('../bin/lib/valid-keys');
+const tmpPath = process.env.TMP_PATH || '/tmp';
 
 const router = express.Router();
-const m = multer({ dest: process.env.TMP_FOLDER || '/tmp' })
 
 router.use(requireToken);
 
 function storeObjectInDatabase(req, res){
 
 	const requestQueryParams = req.query;
-	const requestBody = req.body.data;
-	const requestFile = req.file;
 
 	delete requestQueryParams.token;
 	
@@ -40,7 +38,7 @@ function storeObjectInDatabase(req, res){
 
 	});
 	
-	if( Object.keys(requestQueryParams).length === 0 && requestBody === undefined && requestFile === undefined){
+	if( Object.keys(requestQueryParams).length === 0 ){
 
 		res.status(422);
 		res.json({
@@ -51,7 +49,7 @@ function storeObjectInDatabase(req, res){
 		return
 	} 
 	
-	if( (requestQueryParams.name === undefined || requestQueryParams.name === '') && requestBody !== undefined ){
+	if( (requestQueryParams.name === undefined || requestQueryParams.name === '') ){
 
 		res.status(422);
 		res.json({
@@ -62,67 +60,68 @@ function storeObjectInDatabase(req, res){
 
 	}
 
-	if( (requestQueryParams.name === undefined || requestQueryParams.name === '') && requestBody === undefined && requestFile !== undefined){
-		
-		res.status(422);
-		res.json({
-			status : 'error',
-			message : `You must pass a query parameter with the key 'name' to upload a file`
-		});
-		return;
-	
-	}
+	const destination = `${tmpPath}/${entry.uuid}`;
+	let requestSize = 0;
+	let chunks = [];
 
-	let storageOperation = undefined
+	req.on('data', data => {
 
-	if(requestFile !== undefined){
-		debug('There is a file to save');
-		const uploadedFileReadableStream = fs.createReadStream(requestFile.path, {
-			flags: 'r',
-			encoding: null,
-			fd: null,
-			mode: 0o666,
-			autoClose: true
-		});
+		chunks.push(data);		
 
-		entry.hasFile = true;
+		requestSize += data.length;
+		debug(`Got ${data.length} bytes. Total: ${requestSize}`);
 
-		storageOperation = storage.write(uploadedFileReadableStream, entry.uuid);
+	});
 
-	} else if (requestBody !== undefined){
-		debug('There is a request body to save');
-		entry.hasFile = true;
-		storageOperation = storage.write(requestBody, entry.uuid);
-	} else {
-		storageOperation = Promise.resolve(null);
-	}
+	req.on('end', function(){
 
-	storageOperation
-		.then(function(){
-			debug('Writing entry to database');
-			return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
-		})
-		.then(function(result){
-			debug(result);
-			res.send({
-				status : 'ok',
-				id : entry.uuid
-			});
-		})
-		.catch(err => {
-			debug(err);
-			res.status(500);
-			res.json({
-				status : 'error',
-				reason : 'An error occurred when saving your entity'
-			});
-		})
-	;
+		debug(chunks);
+
+		let storageOperation = undefined
+
+		if(chunks.length > 0){
+			debug(`There is a file to save: ${destination}`);
+
+			const file = Buffer.concat(chunks);
+
+			console.log(`Buffer is ${file.length} bytes.`);
+
+			entry.hasFile = true;
+
+			storageOperation = storage.write(file, entry.uuid);
+
+		} else {
+			storageOperation = Promise.resolve(null);
+		}
+
+		storageOperation
+			.then(function(){
+				debug('Writing entry to database');
+				return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
+			})
+			.then(function(result){
+				debug(result);
+				res.send({
+					status : 'ok',
+					id : entry.uuid
+				});
+			})
+			.catch(err => {
+				debug(err);
+				res.status(500);
+				res.json({
+					status : 'error',
+					reason : 'An error occurred when saving your entity'
+				});
+			})
+		;
+
+	});
 
 }
 
 router.use(validKeys);
-router.post('/', m.single('f'), storeObjectInDatabase);
-router.put('/', m.single('f'), storeObjectInDatabase);
+router.post('/', storeObjectInDatabase);
+router.put('/', storeObjectInDatabase);
 
 module.exports = router;
