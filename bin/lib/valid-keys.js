@@ -18,7 +18,10 @@ module.exports = function(req, res, next){
 	if(offendingKeys.length > 0){
 
 		res.status(420);
-		res.send(`You are not able to pass '${offendingKeys.join(`' or '`)}' as a key for storage`);
+		res.json({
+			status : 'err',
+			reason : `You are not able to pass '${offendingKeys.join(`' or '`)}' as a key for storage`
+		});
 
 	} else {
 		next();

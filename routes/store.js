@@ -11,9 +11,9 @@ const requireToken = require('../bin/lib/require-token');
 const validKeys = require('../bin/lib/valid-keys');
 const tmpPath = process.env.TMP_PATH || '/tmp';
 
-const router = express.Router();
+const MAX_UPLOAD_SIZE = Number(process.env.MAX_UPLOAD_SIZE) || 104857600;
 
-router.use(requireToken);
+const router = express.Router();
 
 function storeObjectInDatabase(req, res){
 
@@ -38,33 +38,32 @@ function storeObjectInDatabase(req, res){
 
 	});
 	
-	if( Object.keys(requestQueryParams).length === 0 ){
+	if( Object.keys(requestQueryParams).length === 0 || ( requestQueryParams.name === undefined || requestQueryParams.name === '' ) ){
 
 		res.status(422);
 		res.json({
 			status : 'error',
-			message : 'You did not pass anything to be stored'
+			message : `You must pass a query parameter with the key 'name' to store this data`
 		});
 
 		return
-	} 
-	
-	if( (requestQueryParams.name === undefined || requestQueryParams.name === '') ){
+	}
 
+	if( Number(req.headers['content-length']) > MAX_UPLOAD_SIZE ){
 		res.status(422);
 		res.json({
 			status : 'error',
-			message : `You must pass a query parameter with the key 'name' to store this object`
+			reason : `The file was too big for upload. The maximum allowed upload size is ${MAX_UPLOAD_SIZE} bytes.`
 		});
-		return;
-
+		return
 	}
 
-	const destination = `${tmpPath}/${entry.uuid}`;
 	let requestSize = 0;
 	let chunks = [];
 
 	req.on('data', data => {
+		
+		debug(data);
 
 		chunks.push(data);		
 
@@ -75,12 +74,9 @@ function storeObjectInDatabase(req, res){
 
 	req.on('end', function(){
 
-		debug(chunks);
-
 		let storageOperation = undefined
 
 		if(chunks.length > 0){
-			debug(`There is a file to save: ${destination}`);
 
 			const file = Buffer.concat(chunks);
 
@@ -96,7 +92,7 @@ function storeObjectInDatabase(req, res){
 
 		storageOperation
 			.then(function(){
-				debug('Writing entry to database');
+				debug(`Writing entry (${entry.uuid}) to database`);
 				return database.write(entry, process.env.AWS_DATA_TABLE_NAME);
 			})
 			.then(function(result){
@@ -107,11 +103,16 @@ function storeObjectInDatabase(req, res){
 				});
 			})
 			.catch(err => {
+
+				const errID = uuid();
+				debug(`ErrorID: ${errID}`);
 				debug(err);
+
 				res.status(500);
 				res.json({
 					status : 'error',
-					reason : 'An error occurred when saving your entity'
+					reason : 'An error occurred when saving your entity',
+					errorID : errID
 				});
 			})
 		;
@@ -120,6 +121,7 @@ function storeObjectInDatabase(req, res){
 
 }
 
+router.use(requireToken);
 router.use(validKeys);
 router.post('/', storeObjectInDatabase);
 router.put('/', storeObjectInDatabase);
