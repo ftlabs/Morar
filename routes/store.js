@@ -122,6 +122,13 @@ function storeObjectInDatabase(req, res){
 }
 
 router.use(validKeys);
+router.get('/', (req, res) => {
+	res.status(420);
+	res.json({
+		status : 'error',
+		reason : 'GET requests are not supported. Use POST or PUT to store items'
+	});
+});
 router.post('/', m.single('f'), storeObjectInDatabase);
 router.put('/', m.single('f'), storeObjectInDatabase);
 
