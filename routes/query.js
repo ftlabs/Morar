@@ -10,8 +10,9 @@ const scrub = require('../bin/lib/clean-results');
 
 router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 
-	let queryParams = req.query;
+	const queryParams = Object.assign({}, req.query);;
 	delete queryParams.token;
+	delete queryParams.offsetKey;
 	// debug('queryParams without token =', queryParams);
 
 	// handle empty query by displaying (~6hrs old) table size
@@ -54,12 +55,14 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 		// debug('d=' + d);
 		// debug('e=' + e);
 		// debug('f=' + f);
-
+		debug('ExKeyCond:', req.query.offsetKey !== undefined ? { uuid : req.query.offsetKey } : undefined);
 		database.scan({
 				TableName : process.env.AWS_DATA_TABLE_NAME,
 				ExpressionAttributeNames  : d,
 				ExpressionAttributeValues : e,
 				FilterExpression          : f,
+				ExclusiveStartKey         : req.query.offsetKey !== undefined ? { uuid : req.query.offsetKey } : undefined
+				// ExclusiveStartKey         : { uuid: '41ba5a2a-de3b-49e5-bd21-d98f406b24d3' }
 			})
 			.then(data => {
 
@@ -78,10 +81,18 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 					return o;
 
 				});
-
-				res.json({
+				
+				const response = {
 					items : responseItems
-				});
+				};
+
+				if(data.offsetKey){
+					debug('Adding offset key to response');
+					response.offsetKey = data.offsetKey.uuid;
+				}
+				
+				debug('RESPONSE FOR CLIENT', response);
+				res.json(response);
 
 			})
 			.catch(err => {

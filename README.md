@@ -71,6 +71,7 @@ The following strings cannot be used as query values in a storage request to Mor
 * dateCreated
 * createdBy
 * hasFile
+* offsetKey
 
 This only applies to query paramaters for the `/store` endpoint, these keys can still be used in a request body.
 
@@ -126,7 +127,7 @@ It is possible to query and filter all of the data stored in Morar, but this fun
 
 The database of information stored in Morar can be accessed through the `/query` endpoint.
 
-The following request will return every item stored in Morar that has been put there by john.doe. 
+The following request will return the most recents items stored in Morar that has been put there by john.doe. 
 
 ```
 // GET request
@@ -144,32 +145,56 @@ For a successful query, a JSON object with the following structure will be retur
 
 ```
 {
-	items : [
+	"items" : [
 		{
-			data : {
-				name : 'Demo Object',
-				glass : 'onion',
-				yellow : 'submarine',
-				hey : 'bulldog'
+			"data" : {
+				"name" : "Demo Object",
+				"glass" : "onion",
+				"yellow" : "submarine",
+				"hey" : "bulldog"
 			},
-			objectURL : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
+			"objectURL" : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
 		},
 		{
-			data : {
-				john : 'Lennon',
-				paul : 'McCartney',
-				george : 'Harrison',
-				ringo : 'Starr'
+			"data" : {
+				"john" : "Lennon",
+				"paul" : "McCartney",
+				"george" : "Harrison",
+				"ringo" : "Starr'
 			},
-			objectURL : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
+			"objectURL" : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
 		}
 
-	]
-
+	],
+	"offsetKey" : "2d213ea0-b851-49d4-8418-848024b66289" 
 }
 ```
 
 Note that the objects in the items array have the same structure as the items that are returned for individual items.
+
+If there is an `offsetKey` value included in the response of your request, there are more objects to be retrieved. To retrieve the additional objects, append `offsetKey=[OFFSET_KEY_VALUE]` to your query parameters. Repeat this action until `offsetKey` is not longer in the response, at which point, you will have retrieved all of the objects for your query.
+
+```
+// GET request
+curl 'https://morar.ft.com/query/?token=[YOUR_ACCESS_TOKEN]&createdBy=john.doe&dataType=JSON&offsetKey=[OFFSET_KEY_VALUE]'
+```
+
+Result when there are no further values to return
+```
+{
+	"items" : [
+		{
+			"data" : {
+				"name" : "Savoy Truffle",
+				"tangerine" : "montelimar",
+				"ginger_sling" : "pineapple heart",
+			},
+			"objectURL" : "http://morar.ft.com/retrieve/object/[OBJECT_UUID]"
+		}
+
+	]
+}
+```
 
 If there are no results for the query, the items array will be empty.
 

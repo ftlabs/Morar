@@ -80,63 +80,39 @@ function scanDatabase(query){
 	
 	debug('Scanning database', query);
 
-	const results = [];
+	return new Promise( (resolve, reject) => {
 
-	function scan(query){
+		if(query.TableName === undefined || query.TableName === null){
+			reject(`'TableName' argument is ${query.TableName}`);
+		} else {
 
-		return new Promise( (resolve, reject) => {
+			DynamoClient.scan(query, function(err, data){
 
-			if(query.TableName === undefined || query.TableName === null){
-				reject(`'TableName' argument is ${query.TableName}`);
-			} else {
+				if(err){
+					reject(err);
+				} else {
+					debug(data.Items.length);
+					if(data.LastEvaluatedKey !== undefined){
+						debug('LASTEVALUATEDKEY>>>', data.LastEvaluatedKey);
+						resolve({
+							Items : data.Items,
+							offsetKey : data.LastEvaluatedKey
+						});
 
-				DynamoClient.scan(query, function(err, data){
-
-					if(err){
-						reject(err);
 					} else {
-						debug(data.Items.length);
-						results.push(data);
-						if(data.LastEvaluatedKey !== undefined){
-							query.ExclusiveStartKey = data.LastEvaluatedKey;
-							return scan(query)
-								.then(function(){
-									resolve();
-								})
-							;
-						} else {
-							resolve();
-						}
-
+						debug('There was no LastEvaluatedKey');
+						resolve({
+							Items : data.Items
+						});
 					}
 
-				})
+				}
 
-			}
+			})
 
-		});
+		}
 
-	}
-
-	return scan(query)
-		.then(function(){
-
-			const totalItems = [];
-
-			results.forEach(result => {
-				result.Items.forEach(Item => {
-					totalItems.push(Item);
-				})
-			});
-
-			debug('Total number of items:', totalItems.length);
-
-			return {
-				Items : totalItems
-			};
-
-		})
-	;
+	});
 
 }
 
