@@ -60,7 +60,8 @@ function readFromDatabase(item, table){
 
 			DynamoClient.get({
 				TableName : table,
-				Key : item
+				Key : item,
+				ConsistentRead : true
 			}, function(err, data) {
 				
 				if (err) {

@@ -61,8 +61,8 @@ router.get('/', [requireToken, restrictEndpoint], function(req, res) {
 				ExpressionAttributeNames  : d,
 				ExpressionAttributeValues : e,
 				FilterExpression          : f,
-				ExclusiveStartKey         : req.query.offsetKey !== undefined ? { uuid : req.query.offsetKey } : undefined
-				// ExclusiveStartKey         : { uuid: '41ba5a2a-de3b-49e5-bd21-d98f406b24d3' }
+				ExclusiveStartKey         : req.query.offsetKey !== undefined ? { uuid : req.query.offsetKey } : undefined,
+				ConsistentRead            : true
 			})
 			.then(data => {
 
