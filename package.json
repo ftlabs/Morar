@@ -6,7 +6,7 @@
     "start": "node ./bin/www"
   },
   "engines": {
-    "node": ">=6.6.0"
+    "node": "> 7.10.0 < 8.0.0"
   },
   "dependencies": {
     "aws-sdk": "^2.6.4",
