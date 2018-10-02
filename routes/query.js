@@ -1,7 +1,7 @@
 const debug = require('debug')('Morar:routes:query');
 const express = require('express');
 const router = express.Router();
-const authS3O = require('s3o-middleware');
+const authS3O = require('@financial-times/s3o-middleware');
 
 const requireToken = require('../bin/lib/require-token');
 const restrictEndpoint = require('../bin/lib/restricted-endpoint');
