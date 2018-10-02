@@ -42,7 +42,6 @@ function checkKeyIsValid(token){
 }
 
 function createKey(userDetails){
-
 	const requiredFields = process.env.REQUIRED_KEY_CREATION_FIELDS.split(',') || [];
 
 	if(requiredFields.length === 0){
@@ -59,7 +58,6 @@ function createKey(userDetails){
 	const omittedFields = [];
 
 	requiredFields.forEach(field => {
-
 		if(userDetails[field] === undefined){
 			allRequirementsMet = false;
 			return;
