@@ -10,17 +10,17 @@
   },
   "dependencies": {
     "aws-sdk": "^2.6.4",
-    "body-parser": "~1.15.1",
+    "body-parser": "^1.18.3",
     "cookie-parser": "~1.4.3",
-    "debug": "~2.2.0",
+    "debug": "^4.0.1",
     "dotenv": "^2.0.0",
-    "express": "~4.13.4",
+    "express": "^4.16.3",
     "express-enforces-ssl": "^1.1.0",
     "hbs": "^4.0.1",
     "helmet": "^2.2.0",
-    "morgan": "~1.7.0",
+    "morgan": "^1.9.1",
     "multer": "^1.2.0",
-    "s3o-middleware": "^1.7.0",
+    "@financial-times/s3o-middleware": "^2.0.8",
     "uuid": "^2.0.3"
   }
 }

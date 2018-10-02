@@ -1,7 +1,7 @@
 const debug = require('debug')('Morar:routes:token');
 const express = require('express');
 const router = express.Router();
-const authS3O = require('s3o-middleware');
+const authS3O = require('@financial-times/s3o-middleware');
 const keys = require('../bin/lib/keys');
 
 const serviceName = process.env.SERVICE_NAME || "Morar";
