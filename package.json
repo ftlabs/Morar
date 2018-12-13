@@ -9,6 +9,7 @@
     "node": "> 7.10.0 < 8.0.0"
   },
   "dependencies": {
+    "@financial-times/s3o-middleware": "^2.0.8",
     "aws-sdk": "^2.6.4",
     "body-parser": "^1.18.3",
     "cookie-parser": "~1.4.3",
@@ -17,10 +18,9 @@
     "express": "^4.16.3",
     "express-enforces-ssl": "^1.1.0",
     "hbs": "^4.0.1",
-    "helmet": "^2.2.0",
+    "helmet": "^3.15.0",
     "morgan": "^1.9.1",
     "multer": "^1.2.0",
-    "@financial-times/s3o-middleware": "^2.0.8",
     "uuid": "^2.0.3"
   }
 }
